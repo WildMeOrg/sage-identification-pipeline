@@ -2,14 +2,18 @@
   // Use IntelliSense to learn about possible attributes.
   // Hover to view descriptions of existing attributes.
   // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
-  "version": "0.2.0",
+  "version": "0.0.1",
   "configurations": [
     {
       "name": "Wave",
       "type": "python",
       "request": "launch",
       "module": "h2o_wave",
-      "args": ["run", "--no-reload", "h2oai_ocean/app.py"]
+      "args": [
+        "run",
+        "--no-reload",
+        "sage_identification_pipeline/app.py"
+      ]
     }
   ]
 }

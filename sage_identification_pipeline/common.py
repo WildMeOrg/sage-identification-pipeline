@@ -4,7 +4,6 @@ import subprocess
 from datetime import timedelta
 from typing import List, Tuple
 
-import h2o_qdb
 import pandas as pd
 
 from h2o_wave import Q, site
@@ -477,10 +476,6 @@ async def make_connector_config_card(q: Q, connector_name):
     q.args.handle_selected_source = True
     q.args.dropdown = connector_name
 
-    # QDB: call qdb _handle_selected_source
-    await h2o_qdb.show_settings(
-        q, q.page['connector_config'], driver_params=driver_params
-    )
     # TODO: Confirm how this is working without save
     # await q.page.save()
 
@@ -506,24 +501,7 @@ async def clear_connector_config(q: Q):
 
 
 async def save_connector_config(q: Q):
-    driver_name, connection_args = await h2o_qdb.show_settings(
-        q, q.page['connector_config'], driver_params={}
-    )
-
-    # Save Connector
-    if driver_name not in q.user.user.connectors:
-        new_connector = DataConnector(q.client.selected_connector)
-        new_connector.configured = True
-        # new_connector.configuration = connection_args
-        q.user.user.connectors[driver_name] = new_connector
-    # else:
-    q.user.user.connectors[driver_name].configuration = connection_args
-
-    print(f'Driver Name: {driver_name}')
-    print(f'Connection Config: {q.user.user.connectors[driver_name].configuration}')
-
-    q.client.selected_connector = None
-    await clear_connector_config(q)
+    pass
 
 
 async def make_import_wizard_card(q: Q):
@@ -542,16 +520,6 @@ async def make_import_wizard_card(q: Q):
 
     driver_params = q.user.user.connectors[connector_name].configuration
     print(driver_params)
-
-    # # QDB: call qdb _handle_selected_source
-    await h2o_qdb.import_from_odbc(
-        q,
-        q.page['import_wizard'],
-        connector_name,
-        h2o_qdb.Target.PANDAS,
-        driver_params,
-        skip_settings=True,
-    )
 
 
 async def clear_import_wizard(q: Q):
@@ -573,14 +541,7 @@ async def save_odbc_data(q: Q):
     table_name = q.args.table_id
 
     driver_params = q.user.user.connectors[connector_name].configuration
-    df = await h2o_qdb.import_from_odbc(
-        q,
-        q.page['import_wizard'],
-        connector_name,
-        h2o_qdb.Target.PANDAS,
-        driver_params,
-        skip_settings=True,
-    )
+    df = None
     if df is None:
         await make_ingest_failed_dialog(q, connector_name, table_name)
         return

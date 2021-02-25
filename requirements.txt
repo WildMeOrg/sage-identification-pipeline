@@ -34,4 +34,3 @@ starlette==0.13.8; python_version >= "3.6" and python_full_version >= "3.6.1"
 typing-extensions==3.7.4.3; python_version < "3.8" and python_full_version >= "3.6.1"
 urllib3==1.26.3; python_version >= "2.7" and python_full_version < "3.0.0" or python_full_version >= "3.6.0" and python_version < "4"
 uvicorn==0.12.2; python_full_version >= "3.6.1"
-h2o_qdb-0.7.0-py3-none-any.whl

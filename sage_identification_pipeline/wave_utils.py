@@ -10,7 +10,7 @@ from h2o_wave.core import expando_to_dict
 import jwt
 
 from .utils import get_hostname
-from h2oai_ocean import GLOBAL_HANDLERS
+from sage_identification_pipeline import GLOBAL_HANDLERS
 
 
 @dataclass

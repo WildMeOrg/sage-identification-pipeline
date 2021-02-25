@@ -1,14 +1,14 @@
 [App]
-Name = "ai.h2o.ocean"
-Version = "0.2.0"
-Title = "H2oai Ocean"
+Name = "sage_identification_pipeline"
+Version = "0.0.1"
+Title = "Sage Identification Pipeline"
 Description = "A place to save app data and share with other apps."
 LongDescription = "about.md"
 Category = "Other"
-Keywords = ["wave", "wave-apps", "storage"]
+Keywords = ["wildme", "wildbook", "sage", "marked recapture", "conservation", "wave", "wave-apps", "storage"]
 
 [Runtime]
-Module = "h2oai_ocean.app"
+Module = "sage_identification_pipeline.app"
 EnableOIDC = true
 VolumeSize = "50Gi"
 VolumeMount = "/minio"

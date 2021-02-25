@@ -1,6 +1,6 @@
 [tool.poetry]
-name = "h2oai-ocean"
-version = "0.2.0"
+name = "sage_identification_pipeline"
+version = "0.0.1"
 license = "Proprietary"
 description = "A place to save app data and share with other apps."
 authors = ["Srinivas Neppalli <srinivas.neppalli@h2o.ai>"]

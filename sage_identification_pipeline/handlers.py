@@ -26,7 +26,6 @@ from .common import (
     prep_empty_folder,
     prep_for_download,
     preview_csv,
-    save_connector_config,
     save_odbc_data,
     set_path_pointer,
     step_into_folder,
@@ -353,7 +352,7 @@ async def favorite_connector(q: Q):
 
 @handler()
 async def save_configuration(q: Q):
-    await save_connector_config(q)
+    pass
 
 
 def is_import_from(q: Q, *args: Any, **kwargs: Any) -> bool:
