@@ -1,0 +1,50 @@
+[App]
+Name = "ai.h2o.ocean"
+Version = "0.2.0"
+Title = "H2oai Ocean"
+Description = "A place to save app data and share with other apps."
+LongDescription = "about.md"
+Category = "Other"
+Keywords = ["wave", "wave-apps", "storage"]
+
+[Runtime]
+Module = "h2oai_ocean.app"
+EnableOIDC = true
+VolumeSize = "50Gi"
+VolumeMount = "/minio"
+MemoryLimit = "8Gi"
+MemoryReservation = "8Gi"
+
+[[Env]]
+Name = "AWS_ACCESS_KEY_ID"
+Secret = "h2o-s3-readonly"
+SecretKey = "accessKey"
+
+[[Env]]
+Name = "AWS_SECRET_ACCESS_KEY"
+Secret = "h2o-s3-readonly"
+SecretKey = "secretKey"
+
+[[Env]]
+Name = "MINIO_ROOT_USER"
+Secret = "ocean-secrets"
+SecretKey = "access-key"
+
+[[Env]]
+Name = "MINIO_ROOT_PASSWORD"
+Secret = "ocean-secrets"
+SecretKey = "secret-key"
+
+[[Env]]
+Name = "MINIO_ENDPOINT"
+Secret = "ocean-secrets"
+SecretKey = "minio-endpoint"
+
+[[Env]]
+Name = "MINIO_ROOT_BUCKET"
+Secret = "ocean-secrets"
+SecretKey = "root-bucket"
+
+[[Env]]
+Name = "RESTRICT_ACCESS_TO_H2OAI_ONLY"
+Value = "false"

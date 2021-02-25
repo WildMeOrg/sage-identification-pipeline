@@ -1,0 +1,72 @@
+from h2o_wave import Q
+
+from .common import create_app_dirs, get_root_bucket, make_base_ui, update_object_table
+from .drivers import get_all_connectors
+from .user import AppUser
+
+
+async def custom_app_init(q: Q):
+    q.app.root_bucket = get_root_bucket()
+    q.app.multi_select_index = 5
+    q.app.max_path_length = 60
+    q.app.connectors = get_all_connectors()
+
+
+async def initialize_app(q: Q):
+    # Initialize only once per app instance
+    if q.app.initialized:
+        return
+
+    # Setup Cards and Users
+    q.app.cards = {
+        'crash_card': {},
+    }
+    q.app.users = {}
+
+    # Setup the directory structure for the app in the local file system
+    create_app_dirs(q)
+
+    # Perform all initialization specific to this app
+    await custom_app_init(q)
+
+    # Mark the app as initialized
+    q.app.initialized = True
+
+
+async def initialize_user(q: Q):
+    user_id = q.auth.subject
+
+    # If this user is logging in for the first time
+    if user_id not in q.app.users:
+        # Create a new user
+        new_user = AppUser(
+            user_id=user_id, email=q.auth.username, users_dir=q.app.users_dir
+        )
+
+        # Set newly created user as current user
+        q.user.user = new_user
+
+        # Add user to the list of app Users
+        q.app.users[user_id] = new_user
+
+        # Perform user initialization specific to this app
+        new_user.assign_storage(q)
+
+
+async def initialize_client(q: Q):
+    if q.client.initialized:
+        return
+
+    # Perform all initialization specific to this app
+    q.client.multi_select_icon = 'CheckboxComposite'
+    q.client.path = ['']
+    q.client.path_pointer = len(q.client.path) - 1
+    q.client.selected_objects = None
+    q.client.wave_file_paths = None
+
+    # Crate the first view of the app
+    await make_base_ui(q)
+    await update_object_table(q)
+
+    # Mark the client as initialized
+    q.client.initialized = True
