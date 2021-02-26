@@ -9,7 +9,7 @@ from .wave_utils import WaveColors
 def get_meta(side_panel=False):
     return ui.meta_card(
         box='',
-        title='Ocean',
+        title='Sage Identification Pipeline',
         layouts=get_layouts(side_panel=side_panel),
     )
 
@@ -17,7 +17,7 @@ def get_meta(side_panel=False):
 def get_header():
     return ui.header_card(
         box='header',
-        title='Ocean',
+        title='Sage Identification Pipeline',
         subtitle='Object storage for H2O-AI-Cloud',
         icon='Lifesaver',
         icon_color=WaveColors.tangerine,
@@ -27,8 +27,8 @@ def get_header():
 def get_title(q: Q):
     return ui.section_card(
         box='title',
-        title=q.user.user.name,
-        subtitle=q.user.user.email,
+        title='hey',
+        subtitle='sblibbl',
         items=[],
     )
 
@@ -64,36 +64,20 @@ def get_secondary_commands(q: Q):
     #         ],
     #     ),
     # ]
-    if q.user.user.relative_timestamps:
-        return [
-            ui.command(
-                name='absolute_timestamps',
-                label='Use Absolute Time',
-                icon='DateTime',
-                caption='Switch to absolute timestamps',
-            ),
-            ui.command(
-                name='configure_connectors',
-                label='Connectors',
-                icon='Plug',
-                caption='Configure Data Connectors',
-            ),
-        ]
-    else:
-        return [
-            ui.command(
-                name='relative_timestamps',
-                label='Use Relative Time',
-                icon='Timeline',
-                caption='Switch to relative timestamps',
-            ),
-            ui.command(
-                name='configure_connectors',
-                label='Connectors',
-                icon='Plug',
-                caption='Configure Data Connectors',
-            ),
-        ]
+    return [
+        ui.command(
+            name='relative_timestamps',
+            label='Use Relative Time',
+            icon='Timeline',
+            caption='Switch to relative timestamps',
+        ),
+        ui.command(
+            name='configure_connectors',
+            label='Connectors',
+            icon='Plug',
+            caption='Configure Data Connectors',
+        ),
+    ]
 
 
 def get_connector_config_commands(q: Q, favorite=None):
@@ -119,14 +103,8 @@ def get_connector_config_commands(q: Q, favorite=None):
 
 def get_primary_commands(q: Q):
     favorite_connectors = [
-        ui.command(name=f'import_from_{k}', label=k.title(), icon='PlugConnected')
-        for k, v in q.user.user.connectors.items()
-        if v.favorite
     ]
     more_items = [
-        ui.command(name=f'import_from_{k}', label=k.title(), icon='PlugConnected')
-        for k, v in q.user.user.connectors.items()
-        if v.configured and not v.favorite
     ]
     if more_items:
         more_connectors = [

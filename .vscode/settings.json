@@ -67,7 +67,6 @@
     "hmac",
     "httpx",
     "ignoreme",
-    "minio",
     "noqa",
     "odbc",
     "tolist"

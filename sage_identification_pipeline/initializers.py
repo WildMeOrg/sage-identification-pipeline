@@ -1,12 +1,11 @@
 from h2o_wave import Q
 
-from .common import create_app_dirs, get_root_bucket, make_base_ui, update_object_table
+from .common import create_app_dirs, make_base_ui
 from .drivers import get_all_connectors
 from .user import AppUser
 
 
 async def custom_app_init(q: Q):
-    q.app.root_bucket = get_root_bucket()
     q.app.multi_select_index = 5
     q.app.max_path_length = 60
     q.app.connectors = get_all_connectors()
@@ -24,10 +23,10 @@ async def initialize_app(q: Q):
     q.app.users = {}
 
     # Setup the directory structure for the app in the local file system
-    create_app_dirs(q)
+    # create_app_dirs(q)
 
     # Perform all initialization specific to this app
-    await custom_app_init(q)
+    # await custom_app_init(q)
 
     # Mark the app as initialized
     q.app.initialized = True
@@ -49,24 +48,22 @@ async def initialize_user(q: Q):
         # Add user to the list of app Users
         q.app.users[user_id] = new_user
 
-        # Perform user initialization specific to this app
-        new_user.assign_storage(q)
-
 
 async def initialize_client(q: Q):
     if q.client.initialized:
         return
 
     # Perform all initialization specific to this app
-    q.client.multi_select_icon = 'CheckboxComposite'
-    q.client.path = ['']
-    q.client.path_pointer = len(q.client.path) - 1
-    q.client.selected_objects = None
-    q.client.wave_file_paths = None
+    # q.client.multi_select_icon = 'CheckboxComposite'
+    # q.client.path = ['']
+    # q.client.path_pointer = len(q.client.path) - 1
+    # q.client.selected_objects = None
+    # q.client.wave_file_paths = None
 
     # Crate the first view of the app
+    print('before make')
     await make_base_ui(q)
-    await update_object_table(q)
+    print('after make')
 
     # Mark the client as initialized
     q.client.initialized = True

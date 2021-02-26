@@ -161,90 +161,6 @@ def download_file(url, file_path):
         fp.write(r.content)
     return file_abspath
 
-
-def breakdown_aws_presigned_url(presigned_url):
-    """
-    Breakdown a presigned AWS URL
-
-    example presigned url:
-    http://127.0.0.1:9000/minio-root/ai/h2o/ocean/user/b9bcc9cb-90b9-40bd-8a96-681b5d4f3f87/Iris.csv
-    ?X-Amz-Algorithm=AWS4-HMAC-SHA256
-    &X-Amz-Credential=AKIAIOSFODNN7EXAMPLE%2F20210217%2Fus-east-1%2Fs3%2Faws4_request
-    &X-Amz-Date=20210217T230446Z
-    &X-Amz-Expires=86400
-    &X-Amz-SignedHeaders=host
-    &X-Amz-Signature=9d7abb8e6656a1c87d6ec8e9c11a6db11f5ba906334e47bfce40f4d6b1b06d80
-
-    To be able to use this url in a HTTP GET request, it needs to be broken down in to
-    - Actual base URL and it's
-    - Parameters
-    """
-    base_url, params_url = presigned_url.split('?', maxsplit=1)
-    *_, file_name = base_url.split('/')
-    params_keys = [
-        'X-Amz-Algorithm',
-        'X-Amz-Credential',
-        'X-Amz-Date',
-        'X-Amz-Expires',
-        'X-Amz-SignedHeaders',
-        'X-Amz-Signature',
-    ]
-    params = {}
-    params_url_keys = []
-    params_list = params_url.split('&')
-    for key in params_keys:
-        for x in params_list:
-            if key in x:
-                k, value = x.split('=', maxsplit=1)
-                params_url_keys.append(k)
-                params[key] = value
-                break
-
-    params['X-Amz-Credential'] = params['X-Amz-Credential'].replace('%2F', '/')
-
-    for k, v in params.items():
-        print(f'{k}={v}')
-
-    return base_url, params, file_name
-
-
-def is_presigned_url(url):
-    params_keys = [
-        'X-Amz-Algorithm',
-        'X-Amz-Credential',
-        'X-Amz-Date',
-        'X-Amz-Expires',
-        'X-Amz-SignedHeaders',
-        'X-Amz-Signature',
-    ]
-    return all([k in url for k in params_keys])
-
-
-def download_from_presigned_url(presigned_url, download_dir):
-    url, params, file_name = breakdown_aws_presigned_url(presigned_url)
-
-    if not os.path.isdir(download_dir):
-        os.makedirs(download_dir, exist_ok=False)
-    file_abspath = os.path.join(os.path.abspath(download_dir), file_name)
-
-    r = httpx.get(url=url, params=params)
-    with open(file_abspath, 'wb') as fp:
-        fp.write(r.content)
-
-    return file_abspath
-
-
-class MyCustomAuth(httpx.Auth):
-    requires_response_body = True
-
-    def __init__(self, access_token):
-        self.access_token = access_token
-
-    def auth_flow(self, request):
-        request.headers["Authentication"] = self.access_token
-        response = yield request
-
-
 def get_file(url, file_path, access_token):
     file_abspath = os.path.abspath(file_path)
     parent_dir = os.path.dirname(file_abspath)
@@ -256,13 +172,6 @@ def get_file(url, file_path, access_token):
     with open(file_abspath, 'wb') as fp:
         fp.write(r.content)
     return file_abspath
-
-
-def blake2b_hash(message: str, salt: str) -> str:
-    h = blake2b(salt=b64decode(salt.encode('utf-8')))
-    h.update(message.encode('utf-8'))
-    return h.hexdigest()
-
 
 def size_human_readable(bytes: int) -> str:
     if bytes > 10 ** 9:

@@ -1,3 +1,3 @@
-# Ocean
+# Sage Identification Pipeline
 
-File manager for H2O AI Cloud
+Demonstration of Wild Me's identification pipeline, built for the Wave app store.
