@@ -12,9 +12,10 @@ from .components import (
     get_meta,
     get_header,
     get_title,
-    get_path_tabs,
-    get_toolbar,
-    get_object_table_form,
+    get_stepper,
+    get_target_image,
+    get_action_card,
+    get_results_table,
     get_footer
 )
 
@@ -28,15 +29,14 @@ from .utils import (
 
 async def make_base_ui(q: Q):
     q.page['meta'] = get_meta()
-    q.page['header'] = get_header()
+    # q.page['header'] = get_header()
     q.page['title'] = get_title(q)
-    q.page['path_tabs'] = get_path_tabs()
-    q.page['commands'] = get_toolbar(q)
-    q.page['objects'] = get_object_table_form()
+    q.page['target_image'] = get_target_image(q)
+    q.page['action_card'] = get_action_card(q)
+    q.page['stepper'] = get_stepper(q)
+    q.page['results_table'] = get_results_table()
     q.page['footer'] = get_footer()
-    print('there!')
     await q.page.save()
-    print('here!')
 
 def create_app_dirs(q: Q):
     # A directory for all users data
