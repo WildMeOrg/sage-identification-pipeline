@@ -4,6 +4,7 @@ from typing import Any
 from h2o_wave import Q
 from h2o_wave.core import expando_to_dict
 from .wave_utils import clear_cards, handler
+from .components import make_candidate_dialog
 
 @handler()
 async def user_files(q: Q):
@@ -22,6 +23,16 @@ async def run(q: Q):
    nms = q.args.nms
    sensitivity = q.args.sensitivity
    print(f'model tag: {model_tag}, nms: {nms}, sensitivity: {sensitivity}')
+   await q.page.save()
+
+@handler()
+async def results_table(q: Q):
+   await make_candidate_dialog(q)
+   await q.page.save()
+
+@handler()
+async def close_dialog(q: Q):
+   q.page['meta'].dialog = None
    await q.page.save()
 
 @handler()

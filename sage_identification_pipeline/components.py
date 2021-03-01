@@ -29,7 +29,7 @@ def get_title(q: Q):
     return ui.section_card(
         box='header',
         title='Sage Identification Pipeline',
-        subtitle='Created by Wild Me for the Wave App Store',
+        subtitle='Created by Wild Me for the H2O.AI Hybrid Cloud Appstore',
         items=[],
     )
 
@@ -107,26 +107,22 @@ def get_results_columns():
         ui.table_column(
             name='individual',
             label='Individual',
-            max_width='160px',
-            searchable=True,
             sortable=True,
+            link=True,
         ),
         ui.table_column(
             name='avg',
             label='Avg. score',
-            max_width='100px',
             sortable=True,
         ),
         ui.table_column(
             name='curvrank',
             label='Curvrank score',
-            max_width='100px',
             sortable=True,
         ),
         ui.table_column(
             name='finfindr',
             label='finFindR score',
-            max_width='100px',
             sortable=True,
         ),
     ]
@@ -134,14 +130,20 @@ def get_results_columns():
 
 
 def get_results_table():
+    fake_row_data = [
+        ['abc', '232', '123', '42'],
+        ['def', '232', '123', '42'],
+        ['ghi', '232', '123', '42'],
+    ]
     return ui.form_card(
+        title='Identification results',
         box=ui.box('footer'),  # height='100%'),
         items=[
             ui.table(
                 name='results_table',
                 columns=get_results_columns(),
-                rows=[],
-                height='400px',  # Need this so that table occupies a fixed space regardless of number of rows  # noqa: E501
+                rows=[ui.table_row(name=x[0], cells=x) for x in fake_row_data],
+                # height='400px',  # Need this so that table occupies a fixed space regardless of number of rows  # noqa: E501
                 # height='100%',  # Will make table disappear
                 multiple=False,
                 values=None,
@@ -162,40 +164,52 @@ async def make_import_from_url_dialog(q: Q):
     await q.page.save()
     q.page['meta'].dialog = ui.dialog(
         title='Import From a URL',
-        items=[
-            ui.textbox(name='object_url', label='URL'),
-            ui.buttons(
-                items=[
-                    ui.button(name='import_from_url_now', label='Import', primary=True),
-                    ui.button(
-                        name='cancel_import_from_url_now', label='Cancel', primary=False
-                    ),
-                ],
-                justify='start',
-            ),
-        ],
+        items=[],
     )
     await q.page.save()
 
 
-async def make_wait_for_import_dialog(q: Q):
+def generate_evidence_url(
+    extern_reference, query_annot_uuid, database_annot_uuid, version
+):
+    api_prefix = 'https://demo.dyn.wildme.io'
+    return f'{api_prefix}/api/query/graph/match/thumb/?extern_reference={extern_reference}&query_annot_uuid={query_annot_uuid}&database_annot_uuid={database_annot_uuid}&version={version}'
+
+
+async def make_candidate_dialog(q: Q):
+    extern_reference = 'angmvnjtzxbhuhta'
+    query_annot_uuid = 'df1fde83-ff93-468b-be52-e7a94b48ef9a'
+    database_annot_uuid = '5e494777-bf4d-485e-8c29-1026111b48b0'
+
+    cleanUrl = generate_evidence_url(
+        extern_reference, query_annot_uuid, database_annot_uuid, 'clean'
+    )
+    matchesUrl = generate_evidence_url(
+        extern_reference, query_annot_uuid, database_annot_uuid, 'matches'
+    )
+    heatmaskUrl = generate_evidence_url(
+        extern_reference, query_annot_uuid, database_annot_uuid, 'heatmask'
+    )
+
     q.page['meta'].dialog = None
     await q.page.save()
     q.page['meta'].dialog = ui.dialog(
-        title='Import From a URL',
+        title='Identification candidate',
+        closable=True,
         items=[
-            ui.text('Please wait while your file is being imported ...'),
-            ui.buttons(
-                items=[
-                    ui.button(
-                        name='cancel_import_from_url_now',
-                        label='Close',
-                        primary=True,
-                        disabled=True,
-                    ),
-                ],
-                justify='center',
+            ui.text(content='Target image with candidate match'),
+            ui.text(content=f'![target image with candidate image]({cleanUrl})'),
+            ui.text(content='Hotspotter markup'),
+            ui.text(
+                content=f'![target image with candidate image and hotspotter markup]({matchesUrl})'
             ),
+            ui.text(content='Hotspotter heatmap'),
+            ui.text(
+                content=f'![target image with candidate image and heatmap]({heatmaskUrl})'
+            ),
+            ui.button(name='close_dialog', label='Close', primary=True),
+            ui.button(name='close_dialog', label='Close', primary=True),
+            # Note: wave seems to be ignoring the last item in this list, hence the duplicate item.
         ],
     )
     await q.page.save()
@@ -299,76 +313,6 @@ async def make_delete_confirm_dialog(q: Q):
     await q.page.save()
 
 
-async def make_delete_failed_dialog(q: Q, errors):
-    q.page['meta'].dialog = None
-    await q.page.save()
-    error_messages = [ui.message_bar(type='danger', text=x) for x in errors]
-
-    q.page['meta'].dialog = ui.dialog(
-        title='Deleting Objects Failed!',
-        items=error_messages
-        + [
-            ui.buttons(
-                items=[
-                    ui.button(
-                        name='cancel_delete_now',
-                        label='Close',
-                        primary=True,
-                    ),
-                ],
-                justify='center',
-            ),
-        ],
-    )
-    await q.page.save()
-
-
-async def make_can_not_download_dialog(q: Q, error_msg):
-    q.page['meta'].dialog = None
-    await q.page.save()
-    q.page['meta'].dialog = ui.dialog(
-        title='Download',
-        items=[
-            ui.message_bar(
-                type='danger',
-                text=error_msg,
-            ),
-            ui.buttons(
-                items=[
-                    ui.button(
-                        name='close_download_dialog', label='Close', primary=True
-                    ),
-                ],
-                justify='center',
-            ),
-        ],
-    )
-    await q.page.save()
-
-
-async def make_wait_for_download_dialog(q: Q):
-    q.page['meta'].dialog = None
-    await q.page.save()
-    q.page['meta'].dialog = ui.dialog(
-        title='Download',
-        items=[
-            ui.text('Please wait while your Download is being prepared ...'),
-            ui.buttons(
-                items=[
-                    ui.button(
-                        name='close_download_dialog',
-                        label='Close',
-                        primary=True,
-                        disabled=True,
-                    ),
-                ],
-                justify='center',
-            ),
-        ],
-    )
-    await q.page.save()
-
-
 async def make_download_links_dialog(q: Q, wave_file_paths):
     q.page['meta'].dialog = None
     await q.page.save()
@@ -393,27 +337,6 @@ async def make_download_links_dialog(q: Q, wave_file_paths):
     q.page['meta'].dialog = ui.dialog(
         title='Download',
         items=dialog_items,
-    )
-    await q.page.save()
-
-
-async def make_can_not_share_dialog(q: Q, error_msg):
-    q.page['meta'].dialog = None
-    await q.page.save()
-    q.page['meta'].dialog = ui.dialog(
-        title='Share Object',
-        items=[
-            ui.message_bar(
-                type='danger',
-                text=error_msg,
-            ),
-            ui.buttons(
-                items=[
-                    ui.button(name='cancel_share_link', label='Close', primary=True),
-                ],
-                justify='center',
-            ),
-        ],
     )
     await q.page.save()
 
