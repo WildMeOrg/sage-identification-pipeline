@@ -16,16 +16,16 @@ from .components import (
     get_target_image,
     get_action_card,
     get_results_table,
-    get_footer
+    get_footer,
 )
 
-from .drivers import DataConnector, make_valid_name
 from .utils import (
     download_file,
     now,
     size_human_readable,
     time_human_readable,
 )
+
 
 async def make_base_ui(q: Q):
     q.page['meta'] = get_meta()
@@ -38,10 +38,12 @@ async def make_base_ui(q: Q):
     q.page['footer'] = get_footer()
     await q.page.save()
 
+
 def create_app_dirs(q: Q):
     # A directory for all users data
     q.app.users_dir = os.path.abspath('./app-data/users')
     os.makedirs(q.app.users_dir, exist_ok=True)
+
 
 def download_to_local_storage(q: Q, object_url):
     file_path = download_file(

@@ -1,0 +1,1 @@
+from .model_tags import classification_model_tags, detection_model_tags

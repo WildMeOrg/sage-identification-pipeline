@@ -1,14 +1,12 @@
 from h2o_wave import Q
 
 from .common import create_app_dirs, make_base_ui
-from .drivers import get_all_connectors
 from .user import AppUser
 
 
 async def custom_app_init(q: Q):
     q.app.multi_select_index = 5
     q.app.max_path_length = 60
-    q.app.connectors = get_all_connectors()
 
 
 async def initialize_app(q: Q):
@@ -61,9 +59,7 @@ async def initialize_client(q: Q):
     # q.client.wave_file_paths = None
 
     # Crate the first view of the app
-    print('before make')
     await make_base_ui(q)
-    print('after make')
 
     # Mark the client as initialized
     q.client.initialized = True

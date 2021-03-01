@@ -1,3 +1,4 @@
+import os
 from typing import Any
 
 from h2o_wave import Q
@@ -6,8 +7,22 @@ from .wave_utils import clear_cards, handler
 
 @handler()
 async def user_files(q: Q):
+    print(q.args.user_files)
+    links = q.args.user_files
+    if links:
+      for link in links:
+        local_path = await q.site.download(link, '.')
+        print(local_path)
+        print(os.path.basename(local_path))
     await q.page.save()
 
+@handler()
+async def run(q: Q):
+   model_tag = q.args.model_tag
+   nms = q.args.nms
+   sensitivity = q.args.sensitivity
+   print(f'model tag: {model_tag}, nms: {nms}, sensitivity: {sensitivity}')
+   await q.page.save()
 
 @handler()
 async def error_report(q: Q):

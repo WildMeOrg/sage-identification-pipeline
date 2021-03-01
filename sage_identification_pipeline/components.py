@@ -4,6 +4,7 @@ from h2o_wave import Q, ui
 
 from .layouts import get_layouts
 from .wave_utils import WaveColors
+from .constants import detection_model_tags, classification_model_tags
 
 
 def get_meta(side_panel=False):
@@ -53,9 +54,32 @@ def get_action_card(q: Q):
         box='right',
         title='Parameters',
         items=[
-            ui.toggle(name='hyperspeed', label='Use hyperspeed'),
-            ui.toggle(name='warp', label='Attend warp tour'),
-            ui.toggle(name='dogs', label='Pet dogs'),
+            ui.dropdown(
+                name='detection_model_tag',
+                label='Detection model tag',
+                choices=[ui.choice(name=x, label=x) for x in detection_model_tags],
+            ),
+            ui.dropdown(
+                name='classification_model_tag',
+                label='Classification model tag',
+                choices=[ui.choice(name=x, label=x) for x in classification_model_tags],
+            ),
+            ui.slider(
+                name='sensitivity',
+                label='Sensitivity',
+                min=0,
+                max=1,
+                value=0.5,
+                step=0.01,
+            ),
+            ui.slider(
+                name='nms',
+                label='Non-maximal suppression (NMS)',
+                min=0,
+                max=1,
+                value=0.5,
+                step=0.01,
+            ),
             ui.button(name='run', label='Run identification pipeline'),
         ],
     )
@@ -66,10 +90,11 @@ def get_stepper(q: Q):
         box='footer',
         items=[
             ui.stepper(
-                name='almost-done-stepper',
+                name='pipeline-stepper',
                 items=[
                     ui.step(label='Upload', icon='CloudUpload'),
                     ui.step(label='Detection', icon='BuildQueueNew'),
+                    ui.step(label='Classification', icon='Compare'),
                     ui.step(label='Identification', icon='BranchCompare'),
                 ],
             )
