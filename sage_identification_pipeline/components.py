@@ -38,11 +38,10 @@ def get_target_image(q: Q):
         box='left',
         title='Target image',
         items=[
-            ui.file_upload(
-                name='target_image_upload',
+            ui.text('Target image will be compared to other images.'),
+            ui.button(
+                name='open_upload_image_dialog',
                 label='Upload target image',
-                file_extensions=['jpg', 'png'],
-                height='180px',
             ),
             ui.button(
                 name='open_example_image_dialog',
@@ -56,8 +55,9 @@ def get_target_image_display(q: Q):
         box='left',
         title='Target image',
         items=[
+            ui.text(content=''), # margin top hack... 
             ui.text(content=f'![target image]({q.app.target_image})'),
-            ui.button(name="reset_target_image", label="Reset")
+            ui.button(name="reset_target_image", label="Reset target image")
         ],
     )
 
@@ -92,7 +92,7 @@ def get_action_card(q: Q):
                 value=0.5,
                 step=0.01,
             ),
-            ui.button(name='run', label='Run identification pipeline'),
+            ui.button(name='run', label='Run identification pipeline', primary=True, disabled=not q.app.target_image),
         ],
     )
 
@@ -216,6 +216,23 @@ async def make_candidate_dialog(q: Q):
     )
     await q.page.save()
 
+async def make_upload_image_dialog(q: Q):
+    q.page['meta'].dialog = None
+    await q.page.save()
+    q.page['meta'].dialog = ui.dialog(
+        title='Upload target image',
+        closable=True,
+        items=[
+            ui.file_upload(
+                name='target_image_upload',
+                label='Upload',
+                file_extensions=['jpg', 'png', 'jpeg'],
+                height='180px',
+            ),
+            ui.button(name='gah', label='gahh', primary=True),
+            # Note: wave seems to be ignoring the last item in this list, hence the duplicate item.
+        ]
+    )
 
 async def make_example_image_dialog(q: Q):
     q.page['meta'].dialog = None
@@ -225,12 +242,10 @@ async def make_example_image_dialog(q: Q):
         title='Select example image',
         closable=True,
         items=[
-            # ui.text(
-            #     content=f'![Selected image]({})'
-            # ),
             ui.dropdown(
                 name='example_image_selected',
                 label='Select image',
+                value=q.app.example_images[0]['wave_path'],
                 choices=[
                     ui.choice(name=img['wave_path'], label=img['label'])
                     for img in q.app.example_images

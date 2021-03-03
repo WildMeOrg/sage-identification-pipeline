@@ -4,20 +4,18 @@ from typing import Any
 from h2o_wave import Q
 from h2o_wave.core import expando_to_dict
 from .wave_utils import clear_cards, handler
-from .components import make_candidate_dialog, make_example_image_dialog, get_target_image_display, get_target_image
+from .components import make_candidate_dialog, make_example_image_dialog, make_upload_image_dialog
+from .common import make_base_ui
 from .sage import fetch_db_numbers, post_target_image
 
 
 @handler()
-async def user_files(q: Q):
-    print(q.args.user_files)
-    print('here')
-    links = q.args.user_files
+async def target_image_upload(q: Q):
+    links = q.args.target_image_upload
     if links:
-        q.app.target_image = await q.site.download(links[0], '.')
-        q.page['target_image'] = get_target_image_display(q)
-        
-    await q.page.save()
+        q.app.target_image = links[0]
+        q.page['meta'].dialog = None
+        await make_base_ui(q)
 
 
 @handler()
@@ -33,18 +31,23 @@ async def run(q: Q):
 async def example_image_chosen(q: Q):
     q.page['meta'].dialog = None
     q.app.target_image = q.args.example_image_selected
-    q.page['target_image'] = get_target_image_display(q)
-    await q.page.save()
+    await make_base_ui(q)
 
 @handler()
 async def reset_target_image(q: Q):
+    await q.site.unload(q.app.target_image)
     q.app.target_image = None
-    q.page['target_image'] = get_target_image(q)
-    await q.page.save()
+    await make_base_ui(q)
+
 
 @handler()
 async def open_example_image_dialog(q: Q):
     await make_example_image_dialog(q)
+    await q.page.save()
+
+@handler()
+async def open_upload_image_dialog(q: Q):
+    await make_upload_image_dialog(q)
     await q.page.save()
 
 @handler()

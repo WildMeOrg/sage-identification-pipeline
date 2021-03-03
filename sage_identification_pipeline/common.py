@@ -35,7 +35,7 @@ async def make_base_ui(q: Q):
 
     print('making base ui')
     print(q.args)
-    if (q.args.example_image_selected):
+    if (q.app.target_image):
         q.page['target_image'] = get_target_image_display(q)
     else:
         q.page['target_image'] = get_target_image(q)
