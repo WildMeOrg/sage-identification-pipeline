@@ -14,6 +14,7 @@ from .components import (
     get_title,
     get_stepper,
     get_target_image,
+    get_target_image_display,
     get_action_card,
     get_results_table,
     get_footer,
@@ -31,7 +32,14 @@ async def make_base_ui(q: Q):
     q.page['meta'] = get_meta()
     # q.page['header'] = get_header()
     q.page['title'] = get_title(q)
-    q.page['target_image'] = get_target_image(q)
+
+    print('making base ui')
+    print(q.args)
+    if (q.args.example_image_selected):
+        q.page['target_image'] = get_target_image_display(q)
+    else:
+        q.page['target_image'] = get_target_image(q)
+    
     q.page['action_card'] = get_action_card(q)
     q.page['stepper'] = get_stepper(q)
     q.page['results_table'] = get_results_table()

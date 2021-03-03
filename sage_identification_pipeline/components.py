@@ -33,21 +33,33 @@ def get_title(q: Q):
         items=[],
     )
 
-
 def get_target_image(q: Q):
     return ui.form_card(
         box='left',
         title='Target image',
         items=[
             ui.file_upload(
-                name='Target image upload',
+                name='target_image_upload',
                 label='Upload target image',
                 file_extensions=['jpg', 'png'],
                 height='180px',
-            )
+            ),
+            ui.button(
+                name='open_example_image_dialog',
+                label='Use an example image',
+            ),
         ],
     )
 
+def get_target_image_display(q: Q):
+    return ui.form_card(
+        box='left',
+        title='Target image',
+        items=[
+            ui.text(content=f'![target image]({q.app.target_image})'),
+            ui.button(name="reset_target_image", label="Reset")
+        ],
+    )
 
 def get_action_card(q: Q):
     return ui.form_card(
@@ -159,16 +171,6 @@ def get_footer():
     )
 
 
-async def make_import_from_url_dialog(q: Q):
-    q.page['meta'].dialog = None
-    await q.page.save()
-    q.page['meta'].dialog = ui.dialog(
-        title='Import From a URL',
-        items=[],
-    )
-    await q.page.save()
-
-
 def generate_evidence_url(
     extern_reference, query_annot_uuid, database_annot_uuid, version
 ):
@@ -215,232 +217,28 @@ async def make_candidate_dialog(q: Q):
     await q.page.save()
 
 
-async def make_import_failed_dialog(q: Q):
+async def make_example_image_dialog(q: Q):
     q.page['meta'].dialog = None
     await q.page.save()
+    print(q.args.selected_example_image)
     q.page['meta'].dialog = ui.dialog(
-        title='Import From a URL',
+        title='Select example image',
+        closable=True,
         items=[
-            ui.message_bar(
-                type='danger',
-                text=(
-                    'Error while importing file.'
-                    'Please check the import link or try again later.'
-                ),
-            ),
-            ui.buttons(
-                items=[
-                    ui.button(
-                        name='cancel_import_from_url_now',
-                        label='Close',
-                        primary=True,
-                    ),
+            # ui.text(
+            #     content=f'![Selected image]({})'
+            # ),
+            ui.dropdown(
+                name='example_image_selected',
+                label='Select image',
+                choices=[
+                    ui.choice(name=img['wave_path'], label=img['label'])
+                    for img in q.app.example_images
                 ],
-                justify='center',
             ),
-        ],
-    )
-    await q.page.save()
-
-
-async def make_invalid_import_link_dialog(q: Q):
-    q.page['meta'].dialog = None
-    await q.page.save()
-    q.page['meta'].dialog = ui.dialog(
-        title='Import From a URL',
-        items=[
-            ui.message_bar(type='danger', text='Invalid import link'),
-            ui.buttons(
-                items=[
-                    ui.button(
-                        name='cancel_import_from_url_now', label='Close', primary=True
-                    ),
-                ],
-                justify='center',
-            ),
-        ],
-    )
-    await q.page.save()
-
-
-async def make_import_completed_dialog(q: Q, file_path):
-    q.page['meta'].dialog = None
-    await q.page.save()
-    q.page['meta'].dialog = ui.dialog(
-        title='Import From a URL',
-        items=[
-            ui.message_bar(
-                type='success',
-                text=(
-                    f'Successfully imported {os.path.basename(file_path)}'
-                    f' as {q.client.path[q.client.path_pointer]}'
-                ),
-            ),
-            ui.buttons(
-                items=[
-                    ui.button(
-                        name='cancel_import_from_url_now',
-                        label='Close',
-                        primary=True,
-                    ),
-                ],
-                justify='center',
-            ),
-        ],
-    )
-    await q.page.save()
-
-
-async def make_delete_confirm_dialog(q: Q):
-    q.page['meta'].dialog = None
-    await q.page.save()
-    q.page['meta'].dialog = ui.dialog(
-        title='Delete Objects',
-        items=[
-            ui.message_bar(
-                type='danger',
-                text='Are you sure you want to delete? This cannot be undone!',
-            ),
-            ui.buttons(
-                items=[
-                    ui.button(name='delete_now', label='Yes! Delete.', primary=True),
-                    ui.button(name='cancel_delete_now', label='No', primary=False),
-                ],
-                justify='start',
-            ),
-        ],
-    )
-    await q.page.save()
-
-
-async def make_download_links_dialog(q: Q, wave_file_paths):
-    q.page['meta'].dialog = None
-    await q.page.save()
-    # print(wave_file_paths)
-    if wave_file_paths:
-        download_links = [
-            ui.link(label=os.path.basename(x), path=x, download=True)
-            for x in wave_file_paths
-        ]
-    else:
-        download_links = [
-            ui.message_bar(type='danger', text='Did not find any objects to download.')
-        ]
-    dialog_items = download_links + [
-        ui.buttons(
-            items=[
-                ui.button(name='close_download_dialog', label='Close', primary=True),
-            ],
-            justify='center',
-        ),
-    ]
-    q.page['meta'].dialog = ui.dialog(
-        title='Download',
-        items=dialog_items,
-    )
-    await q.page.save()
-
-
-async def make_share_object_dialog(q: Q):
-    q.page['meta'].dialog = None
-    await q.page.save()
-    q.page['meta'].dialog = ui.dialog(
-        title='Share Object',
-        items=[
-            ui.text('Expires in (Max 7 days)'),
-            ui.inline(
-                items=[
-                    ui.spinbox(
-                        name='expire_days', label='Days', min=0, max=7, step=1, value=5
-                    ),
-                    ui.spinbox(
-                        name='expire_hours',
-                        label='Hours',
-                        min=0,
-                        max=23,
-                        step=1,
-                    ),
-                    ui.spinbox(
-                        name='expire_minutes',
-                        label='Minutes',
-                        min=0,
-                        max=59,
-                        step=1,
-                    ),
-                ]
-            ),
-            ui.buttons(
-                items=[
-                    ui.button(name='get_share_link', label='Share', primary=True),
-                    ui.button(name='cancel_share_link', label='Cancel', primary=False),
-                ],
-                justify='center',
-            ),
-        ],
-    )
-    await q.page.save()
-
-
-async def make_wait_for_share_link_dialog(q: Q):
-    q.page['meta'].dialog = None
-    await q.page.save()
-    q.page['meta'].dialog = ui.dialog(
-        title='Share Object',
-        items=[
-            ui.text('Please wait while your Share Link is being created ...'),
-            ui.buttons(
-                items=[
-                    ui.button(
-                        name='cancel_share_link',
-                        label='Close',
-                        primary=True,
-                        disabled=True,
-                    ),
-                ],
-                justify='center',
-            ),
-        ],
-    )
-    await q.page.save()
-
-
-async def make_invalid_expiration_time_dialog(q: Q):
-    q.page['meta'].dialog = None
-    await q.page.save()
-    q.page['meta'].dialog = ui.dialog(
-        title='Share Object',
-        items=[
-            ui.message_bar(type='danger', text='Please select a valid Expiration Time'),
-            ui.buttons(
-                items=[
-                    ui.button(name='cancel_share_link', label='Close', primary=True),
-                ],
-                justify='center',
-            ),
-        ],
-    )
-    await q.page.save()
-
-
-async def make_share_link_dialog(q: Q, object_name, share_link):
-    q.page['meta'].dialog = None
-    await q.page.save()
-    q.page['meta'].dialog = ui.dialog(
-        title='Share Object',
-        items=[
-            ui.textbox(
-                name='object_share_link_textbox',
-                label=object_name,
-                value=share_link,
-                multiline=True,
-                height='180px',
-            ),
-            ui.buttons(
-                items=[
-                    ui.button(name='cancel_share_link', label='Close', primary=True),
-                ],
-                justify='center',
-            ),
+            ui.button(name='example_image_chosen', label='Select', primary=True),
+            ui.button(name='example_image_chosen', label='Select', primary=True),
+            # Note: wave seems to be ignoring the last item in this list, hence the duplicate item.
         ],
     )
     await q.page.save()

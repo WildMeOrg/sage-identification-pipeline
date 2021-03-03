@@ -2,11 +2,7 @@ from h2o_wave import Q
 
 from .common import create_app_dirs, make_base_ui
 from .user import AppUser
-
-
-async def custom_app_init(q: Q):
-    q.app.multi_select_index = 5
-    q.app.max_path_length = 60
+from .constants import example_images
 
 
 async def initialize_app(q: Q):
@@ -28,6 +24,14 @@ async def initialize_app(q: Q):
 
     # Mark the app as initialized
     q.app.initialized = True
+    q.app.api_prefix = 'https://demo.dyn.wildme.io'
+    q.app.multi_select_index = 5
+    q.app.max_path_length = 60
+
+    wave_paths = await q.site.upload([image['path'] for image in example_images])
+    for p, example_image in zip(wave_paths, example_images):
+        example_image.update({'wave_path': p})
+    q.app.example_images = example_images
 
 
 async def initialize_user(q: Q):

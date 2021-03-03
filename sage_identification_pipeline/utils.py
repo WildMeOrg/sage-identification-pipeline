@@ -117,7 +117,8 @@ def safe_request(
     request_job, url, message=None, request_json=None, params=None, options=None
 ):
     request_args = {"url": url, "params": params}  # "allow_redirects": False
-    request_args.update(options)
+    if options:
+        request_args.update(options)
     if request_json is not None:
         request_args["json"] = request_json
     try:
@@ -125,7 +126,8 @@ def safe_request(
         response.raise_for_status()
     except requests.exceptions.HTTPError as http_error:
         # response.status_code != 200
-        print(f"Http Error: {http_error}")
+        # print(f"Http Error: {http_error}")
+        print('Http Error')
         return None
     except requests.exceptions.ConnectionError as connection_error:
         print(f"Connection Error: {connection_error}")
