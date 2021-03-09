@@ -1,12 +1,13 @@
 import os
 from typing import Any
+import asyncio
 
 from h2o_wave import Q
 from h2o_wave.core import expando_to_dict
 from .wave_utils import clear_cards, handler
 from .components import make_candidate_dialog, make_example_image_dialog, make_upload_image_dialog
 from .common import make_base_ui
-from .sage import fetch_db_numbers, post_target_image
+from .sage import post_target_image, fetch_image_uuid, fetch_image_size, run_pipeline
 
 
 @handler()
@@ -23,7 +24,21 @@ async def run(q: Q):
     model_tag = q.args.model_tag
     nms = q.args.nms
     sensitivity = q.args.sensitivity
-    post_target_image()
+    local_image_path = await q.site.download(q.app.target_image, '.')
+    image_int = post_target_image(local_image_path)
+    image_uuid = fetch_image_uuid(image_int)
+    image_size = fetch_image_size(image_int)
+    print(image_size)
+
+    q.run(run_pipeline, q, image_uuid) # await it? https://h2oai.github.io/wave/docs/api/server/#h2o_wave.server.Query.run
+    # loop = asyncio.get_event_loop()
+    # loop.create_task(run_pipeline(q, image_uuid)) 
+    # I expect that the print and q.page.save happen immediately after this is called, but 
+    # that the wave program still shows a loading spinner because the main process is busy.
+
+    # loop.run_in_executor(run_pipeline(q, image_uuid))
+    # await run_pipeline(q, image_uuid)
+    
     print(f'model tag: {model_tag}, nms: {nms}, sensitivity: {sensitivity}')
     await q.page.save()
 

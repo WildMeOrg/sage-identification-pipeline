@@ -18,6 +18,8 @@ from .components import (
     get_action_card,
     get_results_table,
     get_footer,
+    get_detection_card,
+    get_classification_card,
 )
 
 from .utils import (
@@ -42,6 +44,8 @@ async def make_base_ui(q: Q):
     
     q.page['action_card'] = get_action_card(q)
     q.page['stepper'] = get_stepper(q)
+    q.page['detection_card'] = get_detection_card(q)
+    q.page['classification_card'] = get_classification_card(q)
     q.page['results_table'] = get_results_table()
     q.page['footer'] = get_footer()
     await q.page.save()

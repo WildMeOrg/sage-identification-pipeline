@@ -115,7 +115,6 @@ def handler(qualifier: Optional[Callable[[Q, Any], bool]] = default_qualifier):
 
     return handler_decorator
 
-
 def print_q_args(q_args):
     print('>>>> q.args >>>>')
     q_args_dict = expando_to_dict(q_args)

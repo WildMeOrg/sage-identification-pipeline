@@ -1,6 +1,5 @@
 from h2o_wave import ui
 
-
 def get_layouts(side_panel=False):
     layouts = [
         ui.layout(
@@ -16,7 +15,15 @@ def get_layouts(side_panel=False):
                         ui.zone('right', size='50%'),
                     ],
                 ),
-                ui.zone('main'),
+                ui.zone('results', size='100%', direction=ui.ZoneDirection.COLUMN),
+                ui.zone(
+                    'split',
+                    direction=ui.ZoneDirection.ROW,
+                    zones=[
+                        ui.zone('detection', size='50%'),
+                        ui.zone('classification', size='50%'),
+                    ],
+                ),
                 ui.zone('footer'),
             ],
         )

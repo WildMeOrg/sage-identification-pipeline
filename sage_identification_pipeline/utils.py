@@ -112,11 +112,16 @@ def lines_matching_regex(lines, match_regex, num_after=None):
 def get_hostname():
     return socket.gethostname()
 
+def json_dump_data(data):
+    converted_data = {}
+    for key in data:
+        converted_data[key] = json.dumps(data[key])
+    return converted_data
 
 def safe_request(
-    request_job, url, message=None, request_json=None, params=None, options=None
+    request_job, url, message=None, request_json=None, params=None, data=None, options=None
 ):
-    request_args = {"url": url, "params": params}  # "allow_redirects": False
+    request_args = {"url": url, "params": params, "data": data}  # "allow_redirects": False
     if options:
         request_args.update(options)
     if request_json is not None:
@@ -126,8 +131,8 @@ def safe_request(
         response.raise_for_status()
     except requests.exceptions.HTTPError as http_error:
         # response.status_code != 200
-        # print(f"Http Error: {http_error}")
-        print('Http Error')
+        print(f"Http Error: {http_error}")
+        # print('Http Error')
         return None
     except requests.exceptions.ConnectionError as connection_error:
         print(f"Connection Error: {connection_error}")

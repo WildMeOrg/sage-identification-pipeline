@@ -38,10 +38,12 @@ def get_target_image(q: Q):
         box='left',
         title='Target image',
         items=[
-            ui.text('Target image will be compared to other images.'),
+            ui.text(''), # margin top hack
+            ui.text('Sage will process the target image using pre-trained image analysis models. The detection model attempts to draw a box around each individual in the target image. The classification model vets the boxes (annotations) for quality. The identification model compares each annotation to our database of individuals to try to find matches.'),
             ui.button(
                 name='open_upload_image_dialog',
                 label='Upload target image',
+                primary=True,
             ),
             ui.button(
                 name='open_example_image_dialog',
@@ -55,7 +57,7 @@ def get_target_image_display(q: Q):
         box='left',
         title='Target image',
         items=[
-            ui.text(content=''), # margin top hack... 
+            ui.text(content=''), # margin top hack
             ui.text(content=f'![target image]({q.app.target_image})'),
             ui.button(name="reset_target_image", label="Reset target image")
         ],
@@ -70,11 +72,13 @@ def get_action_card(q: Q):
                 name='detection_model_tag',
                 label='Detection model tag',
                 choices=[ui.choice(name=x, label=x) for x in detection_model_tags],
+                value='seadragon_v1',
             ),
             ui.dropdown(
                 name='classification_model_tag',
                 label='Classification model tag',
                 choices=[ui.choice(name=x, label=x) for x in classification_model_tags],
+                value='seadragon_v2',
             ),
             ui.slider(
                 name='sensitivity',
@@ -99,7 +103,7 @@ def get_action_card(q: Q):
 
 def get_stepper(q: Q):
     return ui.form_card(
-        box='footer',
+        box='results',
         items=[
             ui.stepper(
                 name='pipeline-stepper',
@@ -113,6 +117,21 @@ def get_stepper(q: Q):
         ],
     )
 
+def get_detection_card(q: Q):
+    return ui.form_card(
+        box='detection',
+        items=[
+            ui.progress(label='Detection in progress', caption='Working...')
+        ]
+    )
+
+def get_classification_card(q: Q):
+    return ui.form_card(
+        box='classification',
+        items=[
+            ui.progress(label='Classification in progress', caption='Working...')
+        ]
+    )
 
 def get_results_columns():
     columns = [
