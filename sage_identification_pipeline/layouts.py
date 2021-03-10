@@ -3,7 +3,7 @@ from h2o_wave import ui
 def get_layouts(side_panel=False):
     layouts = [
         ui.layout(
-            breakpoint='xl',
+            breakpoint='s',
             width='800px',
             zones=[
                 ui.zone('header'),

@@ -59,18 +59,18 @@ async def get_detection_results(q, job_id):
 
 async def run_pipeline(q, uuid):
   print('...starting pipeline')
-  # job_id = await kickoff_detection(q, uuid)
-  # print(f'...kickoff detection finished, job ID is {job_id}')
-  # completed = await poll_status(job_id)
-  # print(f'...detection process completed with result {completed}')
-  # detection_results = await get_detection_results(q, job_id)
-  # print('made it out alive')
-  # q.app.detection_complete = True
-  # if (not detection_result['has_assignments']):
-  #   q.app.annotations = None
-  #   return None
-  # q.app.annotations = ...
-  # await kickoff_classification()
+  job_id = await kickoff_detection(q, uuid)
+  print(f'...kickoff detection finished, job ID is {job_id}')
+  completed = await poll_status(job_id)
+  print(f'...detection process completed with result {completed}')
+  detection_results = await get_detection_results(q, job_id)
+  print('made it out alive')
+  q.app.detection_complete = True
+  if (not detection_result['has_assignments']):
+    q.app.annotations = None
+    return None
+  q.app.annotations = ...
+  await kickoff_classification()
 
 async def poll_status(job_id, max_attempts = 5):
   attempt_count = 0
