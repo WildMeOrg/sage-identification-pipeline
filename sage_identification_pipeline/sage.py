@@ -16,7 +16,9 @@ def sage_process(verbose = False):
           print(f'Running Sage function {func.__name__}')
           print(f'  Args: {args}')
           print(f'  Kwargs: {kwargs}')
-        return await func(*args, **kwargs)
+          result = await func(*args, **kwargs)
+          print(f'  Result: {result}')
+        return result
       except Exception as error:
         print(f'Sage function {func.__name__} failed')
         print(error)
@@ -27,7 +29,6 @@ def sage_process(verbose = False):
 @sage_process(verbose = True)
 async def post_target_image(image_path):
   with open(image_path, 'rb') as imageData:
-    print(f'{api_prefix}/api/upload/image')
     r = requests.post(f'{api_prefix}/api/upload/image/', files = { 'image': imageData })
     return r.json()['response']
 
@@ -45,7 +46,6 @@ async def fetch_image_size(image_int):
 
 @sage_process(verbose = True)
 async def kickoff_detection(q, uuid):
-  print('actually doingit??A?!')
   data = json_dump_data({'image_uuid_list': [{'__UUID__': uuid}], 'model_tag': q.args.detection_model_tag, 'sensitivity': q.args.sensitivity, 'nms_thresh': q.args.nms })
   result = safe_request(request_job = requests.get, url=f'{api_prefix}/api/engine/detect/cnn/lightnet/', data = data)
   return result.json()['response']
@@ -57,14 +57,20 @@ async def get_detection_results(q, job_id):
   print(json)
   return json
 
-async def run_pipeline(q, uuid):
+async def run_pipeline(q, local_image_path):
   print('...starting pipeline')
-  job_id = await kickoff_detection(q, uuid)
-  print(f'...kickoff detection finished, job ID is {job_id}')
+  image_int = await post_target_image(local_image_path)
+
+  image_uuid = await fetch_image_uuid(image_int)
+
+  image_size = await fetch_image_size(image_int)
+  
+  job_id = await kickoff_detection(q, image_uuid)
+
   completed = await poll_status(job_id)
-  print(f'...detection process completed with result {completed}')
+
   detection_results = await get_detection_results(q, job_id)
-  print('made it out alive')
+
   q.app.detection_complete = True
   if (not detection_result['has_assignments']):
     q.app.annotations = None
@@ -73,18 +79,18 @@ async def run_pipeline(q, uuid):
   await kickoff_classification()
 
 async def poll_status(job_id, max_attempts = 5):
-  attempt_count = 0
-  while attempt_count < max_attempts:
-    print('making request')
+  print(f'Running poll status function with job id {job_id}')
+  attempt_count = 1
+  while attempt_count < max_attempts + 1:
     result = safe_request(request_job = requests.get, url=f'{api_prefix}/api/engine/job/status/?jobid={job_id}')
     json = result.json()
     status = json['response']['jobstatus']
     if (status == 'completed'):
-      print('finished!')
+      print(f'  Attempt {attempt_count}: complete')
+      print(f'  Result: {json}')
       return json
-    print('attempt complete with response:')
-    print(json)
+    print(f'  Attempt {attempt_count}: not complete')
     attempt_count += 1
     time.sleep(3) # wait 3 seconds before polling again 
-  print('never completed... womp womp')
+  print('  Maximum number of attempts exceeded. Returning None.')
   return  None
