@@ -153,21 +153,32 @@ def get_classification_progress_card(q: Q):
         ]
     )
 
-def get_classification_card(q: Q):
-    return ui.form_card(
-        box='classification',
-        items=[
-            ui.label(label='Classification results'),
-            ui.separator(label='Annotation 1'),
-            ui.text_s('Score: 0.24'),
-            ui.text_s('Species: Giraffe (Reticulated)'),
-            ui.text_s('Viewpoint: Back-right'),
-            ui.separator(label='Annotation 2'),
-            ui.text_s('Score: 0.24'),
-            ui.text_s('Species: Giraffe (Reticulated)'),
-            ui.text_s('Viewpoint: Back-right'),
-        ]
-    )
+def get_classification_card(q: Q):    
+    if 'classification_results' in q.app and bool(q.app.classification_results):
+        items = [ui.label(label='Classification results')]
+        i = 1
+        for a in q.app.classification_results:
+            score = a['score']
+            species = a['species_nice']
+            viewpoint = a['viewpoint_nice']
+            items.append(ui.separator(label=f'Annotation {i}'))
+            items.append(ui.text_s(f'Score: {score:.3f}'))
+            items.append(ui.text_s(f'Species: {species}'))
+            items.append(ui.text_s(f'Viewpoint: {viewpoint}'))
+            i += 1
+
+        return ui.form_card(
+            box='classification',
+            items=items
+        )
+    else:
+        return ui.form_card(
+            box='classification',
+            items=[
+                ui.label(label='Classification results'),
+                ui.text_s('No results to display'),
+            ]
+        )
 
 def get_results_columns():
     columns = [

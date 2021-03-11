@@ -1,3 +1,3 @@
 # Sage Identification Pipeline
 
-A demonstration of Wild Me's Identification Pipeline, built for the Wave app store.
+Demonstration of Wild Me's Sage Identification Pipeline, built for the H2O.ai cloud app store.
