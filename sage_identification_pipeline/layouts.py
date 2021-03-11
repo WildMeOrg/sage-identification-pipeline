@@ -17,7 +17,8 @@ def get_layouts(side_panel=False):
                 ),
                 ui.zone('results', size='100%', direction=ui.ZoneDirection.COLUMN),
                 ui.zone(
-                    'split',
+                    'svg',
+                    align='start',
                     direction=ui.ZoneDirection.ROW,
                     zones=[
                         ui.zone('detection', size='50%'),

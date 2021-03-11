@@ -134,7 +134,8 @@ def get_detection_card(q: Q):
         # view_box=f'0 0 100 100',
         # width='100%',
         # height='100%',
-        box='detection', view_box='0 0 70 800', width='100%', height='100%',
+        box= ui.box(zone='detection', height='300px'),
+        view_box='0 0 70 800', height='100%', width='100%',
         stage=g.stage(
             arc=g.arc(r1=25, r2=50, a1=90, a2=180)
         )
@@ -146,7 +147,7 @@ def get_detection_card(q: Q):
 
 def get_classification_progress_card(q: Q):
     return ui.form_card(
-        box='classification',
+        box='svg',
         items=[
             ui.progress(label='Classification in progress', caption='Working...')
         ]
@@ -156,7 +157,15 @@ def get_classification_card(q: Q):
     return ui.form_card(
         box='classification',
         items=[
-            ui.progress(label='Classification complete!', caption='Working...')
+            ui.label(label='Classification results'),
+            ui.separator(label='Annotation 1'),
+            ui.text_s('Score: 0.24'),
+            ui.text_s('Species: Giraffe (Reticulated)'),
+            ui.text_s('Viewpoint: Back-right'),
+            ui.separator(label='Annotation 2'),
+            ui.text_s('Score: 0.24'),
+            ui.text_s('Species: Giraffe (Reticulated)'),
+            ui.text_s('Viewpoint: Back-right'),
         ]
     )
 

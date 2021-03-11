@@ -68,6 +68,12 @@ async def kickoff_classification(client, q, annotations):
   json_result = result.json()
   return json_result['response']
 
+@sage_process(verbose = True)
+async def get_classification_results(client, q, job_id):
+  result = await client.get('/api/engine/job/result/', params = {'jobid': job_id})
+  json_result = result.json()
+  return json_result['response']['json_result']
+
 async def poll_status(client, job_id, max_attempts = 5):
   print(f'Running poll status function with job id {job_id}')
   attempt_count = 1
@@ -116,10 +122,13 @@ async def run_pipeline(q, local_image_path):
 
     classification_completed = await poll_status(client, classification_job_id)
 
+    classification_results = await get_classification_results(client, q, classification_job_id)
+
+    q.app.classification_results = classification_results
     q.app.classification_complete = True
     q.app.classification_in_progress = False
     await make_base_ui(q)
     await q.page.save()
-    
+
 
 
