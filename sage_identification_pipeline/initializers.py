@@ -24,6 +24,10 @@ async def initialize_app(q: Q):
 
     # Mark the app as initialized
     q.app.initialized = True
+    q.app.detection_in_progress = False
+    q.app.detection_complete = False
+    q.app.classification_in_progress = False
+    q.app.classification_complete = False
     q.app.api_prefix = 'https://demo.dyn.wildme.io'
     q.app.multi_select_index = 5
     q.app.max_path_length = 60

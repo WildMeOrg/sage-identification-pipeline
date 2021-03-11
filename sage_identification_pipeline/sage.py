@@ -1,11 +1,11 @@
-import requests
 import os 
 import time
 import httpx
 import json
 from functools import wraps
 
-from .utils import safe_request, json_dump_data
+from .utils import json_dump_data
+from .common import make_base_ui
 
 api_prefix = 'https://demo.dyn.wildme.io'
 
@@ -56,7 +56,17 @@ async def kickoff_detection(client, q, uuid):
 async def get_detection_results(client, q, job_id):
   result = await client.get('/api/engine/job/result/', params = {'jobid': job_id})
   json_result = result.json()
-  return json_result
+  results_list = json_result['response']['json_result']['results_list'][0]
+  annotation_list = [{'top': x['xtl'], 'left': x['ytl'], 'width': x['width'], 'height': x['height'], 'theta': x['theta'], 'uuid': x['uuid']['__UUID__']} for x in results_list]
+  return annotation_list
+
+@sage_process(verbose = True)
+async def kickoff_classification(client, q, annotations):
+  annot_uuid_list = [{'__UUID__': x['uuid']} for x in annotations]
+  data = json_dump_data({'annot_uuid_list': annot_uuid_list, 'model_tag': q.args.classification_model_tag, 'algo': 'densenet' })
+  result = await client.post('/api/engine/labeler/cnn/', params = data)
+  json_result = result.json()
+  return json_result['response']
 
 async def poll_status(client, job_id, max_attempts = 5):
   print(f'Running poll status function with job id {job_id}')
@@ -84,16 +94,32 @@ async def run_pipeline(q, local_image_path):
     image_uuid = await fetch_image_uuid(client, image_int)
 
     image_size = await fetch_image_size(client, image_int)
+    q.app.image_size = image_size
     
-    job_id = await kickoff_detection(client, q, image_uuid)
+    q.app.detection_in_progress = True
+    await make_base_ui(q)
 
-    completed = await poll_status(client, job_id)
+    detection_job_id = await kickoff_detection(client, q, image_uuid)
 
-    detection_results = await get_detection_results(client, q, job_id)
+    detection_completed = await poll_status(client, detection_job_id)
 
-    # q.app.detection_complete = True
-    # if (not detection_result['has_assignments']):
-    #   q.app.annotations = None
-    #   return None
-    # # q.app.annotations = ...
-    # await kickoff_classification(client)
+    annotations = await get_detection_results(client, q, detection_job_id)
+
+    q.app.detection_complete = True
+    q.app.detection_in_progress = False
+    q.app.classification_in_progress = True
+    q.app.annotations = annotations
+    await make_base_ui(q)
+    await q.page.save()
+
+    classification_job_id = await kickoff_classification(client, q, annotations)
+
+    classification_completed = await poll_status(client, classification_job_id)
+
+    q.app.classification_complete = True
+    q.app.classification_in_progress = False
+    await make_base_ui(q)
+    await q.page.save()
+    
+
+

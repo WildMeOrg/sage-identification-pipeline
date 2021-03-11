@@ -18,7 +18,9 @@ from .components import (
     get_action_card,
     get_results_table,
     get_footer,
+    get_detection_progress_card,
     get_detection_card,
+    get_classification_progress_card,
     get_classification_card,
 )
 
@@ -44,8 +46,19 @@ async def make_base_ui(q: Q):
     
     q.page['action_card'] = get_action_card(q)
     q.page['stepper'] = get_stepper(q)
+
     q.page['detection_card'] = get_detection_card(q)
-    q.page['classification_card'] = get_classification_card(q)
+
+    # if q.app.detection_in_progress:
+    #     q.page['detection_card'] = get_detection_progress_card(q)
+    # elif q.app. detection_complete:
+    #     q.page['detection_card'] = get_detection_card(q)
+
+    if q.app.classification_in_progress:
+        q.page['classification_card'] = get_classification_progress_card(q)
+    elif q.app.classification_complete:
+        q.page['classification_card'] = get_classification_card(q)
+
     q.page['results_table'] = get_results_table()
     q.page['footer'] = get_footer()
     await q.page.save()

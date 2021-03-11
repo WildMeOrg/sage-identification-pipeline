@@ -1,6 +1,6 @@
 import os
 
-from h2o_wave import Q, ui
+from h2o_wave import Q, ui, graphics as g
 
 from .layouts import get_layouts
 from .wave_utils import WaveColors
@@ -117,7 +117,7 @@ def get_stepper(q: Q):
         ],
     )
 
-def get_detection_card(q: Q):
+def get_detection_progress_card(q: Q):
     return ui.form_card(
         box='detection',
         items=[
@@ -125,11 +125,38 @@ def get_detection_card(q: Q):
         ]
     )
 
-def get_classification_card(q: Q):
+def get_detection_card(q: Q):
+    width = 100
+    height = 100
+    # print(q.app.image_size)
+    return ui.graphics_card(
+        # box='detection',
+        # view_box=f'0 0 100 100',
+        # width='100%',
+        # height='100%',
+        box='detection', view_box='0 0 70 800', width='100%', height='100%',
+        stage=g.stage(
+            arc=g.arc(r1=25, r2=50, a1=90, a2=180)
+        )
+        # stage=g.stage(
+        #     # target = g.image(x='0', y='0', width=f'{width}', height=f'{height}'),
+        #     annotation = g.rect(x='12', y='12', width='70', height='70', stroke='red', stroke_width='3px')
+        # )
+    )
+
+def get_classification_progress_card(q: Q):
     return ui.form_card(
         box='classification',
         items=[
             ui.progress(label='Classification in progress', caption='Working...')
+        ]
+    )
+
+def get_classification_card(q: Q):
+    return ui.form_card(
+        box='classification',
+        items=[
+            ui.progress(label='Classification complete!', caption='Working...')
         ]
     )
 
