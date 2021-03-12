@@ -96,7 +96,7 @@ def get_action_card(q: Q):
                 value=0.5,
                 step=0.01,
             ),
-            ui.button(name='run', label='Run identification pipeline', primary=True, disabled=not q.app.target_image),
+            ui.button(name='run', label='Run identification pipeline', primary=True, disabled=not q.app.target_image or q.app.running_pipeline),
         ],
     )
 
@@ -108,10 +108,10 @@ def get_stepper(q: Q):
             ui.stepper(
                 name='pipeline-stepper',
                 items=[
-                    ui.step(label='Upload', icon='CloudUpload'),
-                    ui.step(label='Detection', icon='BuildQueueNew'),
-                    ui.step(label='Classification', icon='Compare'),
-                    ui.step(label='Identification', icon='BranchCompare'),
+                    ui.step(label='Upload', icon='CloudUpload', done=bool(q.app.upload_complete)),
+                    ui.step(label='Detection', icon='BuildQueueNew', done=bool(q.app.detection_complete)),
+                    ui.step(label='Classification', icon='Compare', done=bool(q.app.classification_complete)),
+                    ui.step(label='Identification', icon='BranchCompare', done=bool(q.app.identification_complete)),
                 ],
             )
         ],
@@ -125,29 +125,37 @@ def get_detection_progress_card(q: Q):
         ]
     )
 
+def get_rect(annotation):
+    return g.rect(
+        x=annotation['top'],
+        y=annotation['left'],
+        width=annotation['width'],
+        height=annotation['height'],
+        fill='rgba(0, 0, 255, 0.2)',
+        stroke='rgb(0, 0, 255)',
+        stroke_width='2px'
+    )
+
 def get_detection_card(q: Q):
-    width = 100
-    height = 100
-    # print(q.app.image_size)
+    card_padding = 30 # inferred from DOM
+    card_width = 386 # inferred from DOM
+    svg_width = card_width - card_padding
+    svg_height = svg_width * q.app.image_size[1] / q.app.image_size[0] 
+    card_height = svg_height + card_padding
+
     return ui.graphics_card(
-        # box='detection',
-        # view_box=f'0 0 100 100',
-        # width='100%',
-        # height='100%',
-        box= ui.box(zone='detection', height='300px'),
-        view_box='0 0 70 800', height='100%', width='100%',
+        box= ui.box(zone='detection',
+        height=f'{card_height}px'),
+        view_box=f'0 0 {q.app.image_size[0]} {q.app.image_size[1]}', height=f'{svg_height}px', width=f'{svg_width}px',
         stage=g.stage(
-            arc=g.arc(r1=25, r2=50, a1=90, a2=180)
+            target = g.image(x='0', y='0', width=f'{q.app.image_size[0]}', height=f'{q.app.image_size[1]}', href=q.app.target_image),
+            **{a['uuid']: get_rect(a) for a in q.app.annotations},
         )
-        # stage=g.stage(
-        #     # target = g.image(x='0', y='0', width=f'{width}', height=f'{height}'),
-        #     annotation = g.rect(x='12', y='12', width='70', height='70', stroke='red', stroke_width='3px')
-        # )
     )
 
 def get_classification_progress_card(q: Q):
     return ui.form_card(
-        box='svg',
+        box='classification',
         items=[
             ui.progress(label='Classification in progress', caption='Working...')
         ]
@@ -207,7 +215,15 @@ def get_results_columns():
     return columns
 
 
-def get_results_table():
+def get_identification_in_progress(q: Q):
+    return ui.form_card(
+        box='footer',
+        items=[
+            ui.progress(label='Identification in progress', caption='Working...')
+        ]
+    )
+
+def get_results_table(q: Q):
     fake_row_data = [
         ['abc', '232', '123', '42'],
         ['def', '232', '123', '42'],

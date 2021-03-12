@@ -74,7 +74,16 @@ async def get_classification_results(client, q, job_id):
   json_result = result.json()
   return json_result['response']['json_result']
 
-async def poll_status(client, job_id, max_attempts = 5):
+@sage_process(verbose = True)
+async def kickoff_identification(client, q, annotations):
+  annot_uuid_list = [{'__UUID__': annotations[0]['uuid']}] # repeat for each one
+  print(annot_uuid_list)
+  data = json_dump_data({'query_annot_uuid_list': annot_uuid_list, 'database_imgsetid': 570 })
+  result = await client.post('/api/engine/query/graph/', params = data)
+  json_result = result.json()
+  return json_result
+
+async def poll_status(client, job_id, max_attempts = 12):
   print(f'Running poll status function with job id {job_id}')
   attempt_count = 1
   while attempt_count < max_attempts + 1:
@@ -96,19 +105,16 @@ async def run_pipeline(q, local_image_path):
   async with httpx.AsyncClient(base_url=api_prefix) as client:
 
     image_int = await post_target_image(client, local_image_path)
-
     image_uuid = await fetch_image_uuid(client, image_int)
-
     image_size = await fetch_image_size(client, image_int)
+
     q.app.image_size = image_size
-    
+    q.app.upload_complete = True
     q.app.detection_in_progress = True
     await make_base_ui(q)
 
     detection_job_id = await kickoff_detection(client, q, image_uuid)
-
     detection_completed = await poll_status(client, detection_job_id)
-
     annotations = await get_detection_results(client, q, detection_job_id)
 
     q.app.detection_complete = True
@@ -119,16 +125,17 @@ async def run_pipeline(q, local_image_path):
     await q.page.save()
 
     classification_job_id = await kickoff_classification(client, q, annotations)
-
     classification_completed = await poll_status(client, classification_job_id)
-
     classification_results = await get_classification_results(client, q, classification_job_id)
 
     q.app.classification_results = classification_results
     q.app.classification_complete = True
     q.app.classification_in_progress = False
+    q.app.identification_in_progress = True
     await make_base_ui(q)
     await q.page.save()
+
+    identification_job_id = await kickoff_identification(client, q, annotations)
 
 
 

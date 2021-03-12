@@ -4,6 +4,16 @@ from .common import create_app_dirs, make_base_ui
 from .user import AppUser
 from .constants import example_images
 
+def reset_pipeline_variables(q: Q):
+    print('resetting!!!')
+    q.app.running_pipeline = False
+    q.app.upload_complete = False
+    q.app.detection_in_progress = False
+    q.app.detection_complete = False
+    q.app.classification_in_progress = False
+    q.app.classification_complete = False
+    q.app.identification_in_progress = False
+    q.app.identification_complete = False
 
 async def initialize_app(q: Q):
     # Initialize only once per app instance
@@ -24,10 +34,7 @@ async def initialize_app(q: Q):
 
     # Mark the app as initialized
     q.app.initialized = True
-    q.app.detection_in_progress = False
-    q.app.detection_complete = False
-    q.app.classification_in_progress = False
-    q.app.classification_complete = False
+    reset_pipeline_variables(q)
     q.app.api_prefix = 'https://demo.dyn.wildme.io'
     q.app.multi_select_index = 5
     q.app.max_path_length = 60
