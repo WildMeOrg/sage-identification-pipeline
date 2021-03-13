@@ -6,14 +6,12 @@ from .layouts import get_layouts
 from .wave_utils import WaveColors
 from .constants import detection_model_tags, classification_model_tags
 
-
 def get_meta(side_panel=False):
     return ui.meta_card(
         box='',
         title='Sage Identification Pipeline',
         layouts=get_layouts(side_panel=side_panel),
     )
-
 
 def get_header():
     return ui.header_card(
@@ -23,7 +21,6 @@ def get_header():
         icon='Lifesaver',
         icon_color=WaveColors.tangerine,
     )
-
 
 def get_title(q: Q):
     return ui.section_card(
@@ -72,20 +69,20 @@ def get_action_card(q: Q):
                 name='detection_model_tag',
                 label='Detection model tag',
                 choices=[ui.choice(name=x, label=x) for x in detection_model_tags],
-                value='seadragon_v1',
+                value='ggr2',
             ),
             ui.dropdown(
                 name='classification_model_tag',
                 label='Classification model tag',
                 choices=[ui.choice(name=x, label=x) for x in classification_model_tags],
-                value='seadragon_v2',
+                value='zebra_v1',
             ),
             ui.slider(
                 name='sensitivity',
                 label='Sensitivity',
                 min=0,
                 max=1,
-                value=0.5,
+                value=0.4,
                 step=0.01,
             ),
             ui.slider(
@@ -93,7 +90,7 @@ def get_action_card(q: Q):
                 label='Non-maximal suppression (NMS)',
                 min=0,
                 max=1,
-                value=0.5,
+                value=0.4,
                 step=0.01,
             ),
             ui.button(name='run', label='Run identification pipeline', primary=True, disabled=not q.app.target_image or q.app.running_pipeline),
@@ -137,21 +134,31 @@ def get_rect(annotation):
     )
 
 def get_detection_card(q: Q):
-    card_padding = 30 # inferred from DOM
-    card_width = 386 # inferred from DOM
-    svg_width = card_width - card_padding
-    svg_height = svg_width * q.app.image_size[1] / q.app.image_size[0] 
-    card_height = svg_height + card_padding
+    if 'annotations' in q.app and bool(q.app.annotations):
+        card_padding = 30 # inferred from DOM
+        card_width = 386 # inferred from DOM
+        svg_width = card_width - card_padding
+        svg_height = svg_width * q.app.image_size[1] / q.app.image_size[0] 
+        card_height = svg_height + card_padding
 
-    return ui.graphics_card(
-        box= ui.box(zone='detection',
-        height=f'{card_height}px'),
-        view_box=f'0 0 {q.app.image_size[0]} {q.app.image_size[1]}', height=f'{svg_height}px', width=f'{svg_width}px',
-        stage=g.stage(
-            target = g.image(x='0', y='0', width=f'{q.app.image_size[0]}', height=f'{q.app.image_size[1]}', href=q.app.target_image),
-            **{a['uuid']: get_rect(a) for a in q.app.annotations},
+        return ui.graphics_card(
+            box= ui.box(zone='detection',
+            height=f'{card_height}px'),
+            view_box=f'0 0 {q.app.image_size[0]} {q.app.image_size[1]}', height=f'{svg_height}px', width=f'{svg_width}px',
+            stage=g.stage(
+                target = g.image(x='0', y='0', width=f'{q.app.image_size[0]}', height=f'{q.app.image_size[1]}', href=q.app.target_image),
+                **{a['uuid']: get_rect(a) for a in q.app.annotations},
+            )
         )
-    )
+    else:
+        return ui.form_card(
+            box='detection',
+            items=[
+                ui.label(label='Detection results'),
+                ui.text_s('No results to display'),
+            ]
+        )
+
 
 def get_classification_progress_card(q: Q):
     return ui.form_card(
@@ -217,11 +224,57 @@ def get_results_columns():
 
 def get_identification_in_progress(q: Q):
     return ui.form_card(
-        box='footer',
+        box='identification',
         items=[
-            ui.progress(label='Identification in progress', caption='Working...')
+            ui.progress(label='Identification in progress', caption='This step can take a long time...')
         ]
     )
+
+def get_identification_results(q: Q):
+    if 'identification_results' in q.app and bool(q.app.identification_results):
+        items = [ui.label(label='Identification results')]
+        i = 1
+        for result in q.app.identification_results:
+            cleanUrl = generate_evidence_url(
+                result['reference'], result['qannot_uuid'], result['dannot_uuid'], 'clean'
+            )
+            matchesUrl = generate_evidence_url(
+                result['reference'], result['qannot_uuid'], result['dannot_uuid'], 'matches'
+            )
+            heatmaskUrl = generate_evidence_url(
+                result['reference'], result['qannot_uuid'], result['dannot_uuid'], 'heatmask'
+            )
+
+            items.append(ui.separator(label=f'Annotation {i}'))
+            items.append(ui.text_s(f'Best match with no evidence'))
+            items.append(ui.text(
+                content=f'![target image with candidate image and heatmap]({cleanUrl})'
+            ))
+            items.append(ui.text_s(f'Best match with heatmask evidence'))
+            items.append(ui.text(
+                content=f'![target image with candidate image and heatmap]({heatmaskUrl})'
+            ))
+            items.append(ui.text_s(f'Best match with detailed evidence'))
+            items.append(ui.text(
+                content=f'![target image with candidate image and heatmap]({matchesUrl})'
+            ))
+            i += 1
+
+        items.append(ui.text(
+            content='Using your own wildlife images? Researchers would appreciate it if you would report them to the appropriate [Wildbook](https://wildme.org/#/platforms)!'
+        ))
+        return ui.form_card(
+            box='identification',
+            items=items
+        )
+    else:
+        return ui.form_card(
+            box='identification',
+            items=[
+                ui.label(label='Identification results'),
+                ui.text_s('No results to display'),
+            ]
+        )
 
 def get_results_table(q: Q):
     fake_row_data = [
@@ -319,23 +372,35 @@ async def make_upload_image_dialog(q: Q):
 async def make_example_image_dialog(q: Q):
     q.page['meta'].dialog = None
     await q.page.save()
-    print(q.args.selected_example_image)
-    q.page['meta'].dialog = ui.dialog(
-        title='Select example image',
-        closable=True,
-        items=[
-            ui.dropdown(
-                name='example_image_selected',
-                label='Select image',
-                value=q.app.example_images[0]['wave_path'],
-                choices=[
-                    ui.choice(name=img['wave_path'], label=img['label'])
-                    for img in q.app.example_images
-                ],
-            ),
-            ui.button(name='example_image_chosen', label='Select', primary=True),
-            ui.button(name='example_image_chosen', label='Select', primary=True),
-            # Note: wave seems to be ignoring the last item in this list, hence the duplicate item.
-        ],
-    )
+
+    if 'example_images' in q.app:
+        q.page['meta'].dialog = ui.dialog(
+            title='Select example image',
+            closable=True,
+            items=[
+                ui.dropdown(
+                    name='example_image_selected',
+                    label='Select image',
+                    value=q.app.example_images[0]['wave_path'],
+                    choices=[
+                        ui.choice(name=img['wave_path'], label=img['label'])
+                        for img in q.app.example_images
+                    ],
+                ),
+                ui.button(name='example_image_chosen', label='Select', primary=True),
+                ui.button(name='example_image_chosen', label='Select', primary=True),
+                # Note: wave seems to be ignoring the last item in this list, hence the duplicate item.
+            ],
+        )
+    else:
+        q.page['meta'].dialog = ui.dialog(
+            title='Loading example images',
+            closable=True,
+            items=[
+                ui.text('Example images have not loaded yet. Check back in a few seconds.'),
+                ui.text('Example images have not loaded yet. Check back in a few seconds.'),
+                # Note: wave seems to be ignoring the last item in this list, hence the duplicate item.
+            ],
+        )
+
     await q.page.save()

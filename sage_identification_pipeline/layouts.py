@@ -25,6 +25,7 @@ def get_layouts(side_panel=False):
                         ui.zone('classification', size='50%'),
                     ],
                 ),
+                ui.zone('identification'),
                 ui.zone('footer'),
             ],
         )

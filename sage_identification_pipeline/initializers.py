@@ -5,7 +5,6 @@ from .user import AppUser
 from .constants import example_images
 
 def reset_pipeline_variables(q: Q):
-    print('resetting!!!')
     q.app.running_pipeline = False
     q.app.upload_complete = False
     q.app.detection_in_progress = False

@@ -48,8 +48,9 @@ async def fetch_image_size(client, image_int):
 
 @sage_process(verbose = True)
 async def kickoff_detection(client, q, uuid):
+  # data = {'image_uuid_list': [{'__UUID__': uuid}], 'model_tag': q.args.detection_model_tag, 'sensitivity': q.args.sensitivity, 'nms_thresh': q.args.nms }
   data = json_dump_data({'image_uuid_list': [{'__UUID__': uuid}], 'model_tag': q.args.detection_model_tag, 'sensitivity': q.args.sensitivity, 'nms_thresh': q.args.nms })
-  result = await client.get('/api/engine/detect/cnn/lightnet/', params = data)
+  result = await client.post('/api/engine/detect/cnn/lightnet/', data = data)
   return result.json()['response']
 
 @sage_process(verbose = True)
@@ -57,14 +58,14 @@ async def get_detection_results(client, q, job_id):
   result = await client.get('/api/engine/job/result/', params = {'jobid': job_id})
   json_result = result.json()
   results_list = json_result['response']['json_result']['results_list'][0]
-  annotation_list = [{'top': x['xtl'], 'left': x['ytl'], 'width': x['width'], 'height': x['height'], 'theta': x['theta'], 'uuid': x['uuid']['__UUID__']} for x in results_list]
+  annotation_list = [{'top': x['xtl'], 'left': x['ytl'], 'width': x['width'], 'height': x['height'], 'theta': x['theta'], 'uuid': x['uuid']['__UUID__'], 'id': x['id']} for x in results_list]
   return annotation_list
 
 @sage_process(verbose = True)
 async def kickoff_classification(client, q, annotations):
   annot_uuid_list = [{'__UUID__': x['uuid']} for x in annotations]
   data = json_dump_data({'annot_uuid_list': annot_uuid_list, 'model_tag': q.args.classification_model_tag, 'algo': 'densenet' })
-  result = await client.post('/api/engine/labeler/cnn/', params = data)
+  result = await client.post('/api/engine/labeler/cnn/', data = data)
   json_result = result.json()
   return json_result['response']
 
@@ -75,13 +76,17 @@ async def get_classification_results(client, q, job_id):
   return json_result['response']['json_result']
 
 @sage_process(verbose = True)
-async def kickoff_identification(client, q, annotations):
-  annot_uuid_list = [{'__UUID__': annotations[0]['uuid']}] # repeat for each one
-  print(annot_uuid_list)
-  data = json_dump_data({'query_annot_uuid_list': annot_uuid_list, 'database_imgsetid': 570 })
-  result = await client.post('/api/engine/query/graph/', params = data)
+async def kickoff_identification(client, q, annotation):
+  data = json_dump_data({'annot_uuid': {'__UUID__': annotation['uuid']}, 'database_imgsetid': 570 }) # repeat for each one 
+  result = await client.post('/api/engine/review/query/chip/best/', data = data)
   json_result = result.json()
-  return json_result
+  return json_result['response']
+
+@sage_process(verbose = True)
+async def get_identification_results(client, q, job_id):
+  result = await client.get('/api/engine/job/result/', params = {'jobid': job_id})
+  json_result = result.json()
+  return json_result['response']['json_result']['extern']
 
 async def poll_status(client, job_id, max_attempts = 12):
   print(f'Running poll status function with job id {job_id}')
@@ -122,7 +127,6 @@ async def run_pipeline(q, local_image_path):
     q.app.classification_in_progress = True
     q.app.annotations = annotations
     await make_base_ui(q)
-    await q.page.save()
 
     classification_job_id = await kickoff_classification(client, q, annotations)
     classification_completed = await poll_status(client, classification_job_id)
@@ -133,9 +137,16 @@ async def run_pipeline(q, local_image_path):
     q.app.classification_in_progress = False
     q.app.identification_in_progress = True
     await make_base_ui(q)
-    await q.page.save()
 
-    identification_job_id = await kickoff_identification(client, q, annotations)
+    identification_results = []
+    for annotation in annotations:
+      identification_job_id = await kickoff_identification(client, q, annotation)
+      identification_completed = await poll_status(client, identification_job_id, 120)
+      job_results = await get_identification_results(client, q, identification_job_id)
+      identification_results.append(job_results)
 
-
+    q.app.identification_results = identification_results
+    q.app.identification_complete = True
+    q.app.identification_in_progress = False
+    await make_base_ui(q)
 
