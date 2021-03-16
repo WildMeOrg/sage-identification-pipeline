@@ -44,7 +44,7 @@ async def example_image_chosen(q: Q):
 
 @handler()
 async def reset_target_image(q: Q):
-    await q.site.unload(q.app.target_image)
+    # await q.site.unload(q.app.target_image)
     reset_pipeline_variables(q)
     q.app.target_image = None
     await make_base_ui(q)

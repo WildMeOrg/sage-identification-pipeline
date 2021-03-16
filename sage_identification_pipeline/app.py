@@ -35,7 +35,7 @@ async def serve(q: Q):
         q.page.drop()
         await ui_crash_card(
             q,
-            app_name='Sage Identification Pipeline',
+            app_name='WBIA Identification Pipeline',
             card_name='crash_card',
             box='1 1 -1 -1',
             label='wildme/sage_identification_pipeline',

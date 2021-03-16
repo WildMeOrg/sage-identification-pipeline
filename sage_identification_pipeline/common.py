@@ -10,7 +10,7 @@ from h2o_wave import Q, site
 
 from .components import (
     get_meta,
-    get_header,
+    get_logo,
     get_title,
     get_stepper,
     get_target_image,
@@ -35,11 +35,9 @@ from .utils import (
 
 async def make_base_ui(q: Q):
     q.page['meta'] = get_meta()
-    # q.page['header'] = get_header()
+    q.page['logo'] = get_logo(q)
     q.page['title'] = get_title(q)
 
-    print('making base ui')
-    print(q.args)
     if (q.app.target_image):
         q.page['target_image'] = get_target_image_display(q)
     else:

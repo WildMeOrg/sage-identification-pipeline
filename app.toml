@@ -1,14 +1,14 @@
 [App]
-Name = "sage_identification_pipeline"
+Name = "wbia_identification_pipeline"
 Version = "0.0.1"
-Title = "Sage Identification Pipeline"
-Description = "A place to save app data and share with other apps."
+Title = "WBIA Identification Pipeline"
+Description = "Demonstration of Wild Me's WBIA Identification Pipeline, built for the H2O.ai cloud app store."
 LongDescription = "about.md"
 Category = "Other"
-Keywords = ["wildme", "wildbook", "sage", "marked recapture", "conservation", "wave", "wave-apps", "storage"]
+Keywords = ["wildme", "wildbook", "sage", "wbia", "marked recapture", "conservation", "wave", "wave-apps", "storage"]
 
 [Runtime]
-Module = "sage_identification_pipeline.app"
+Module = "wbia_identification_pipeline.app"
 EnableOIDC = true
 VolumeSize = "50Gi"
 VolumeMount = "/minio"

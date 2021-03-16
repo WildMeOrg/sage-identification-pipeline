@@ -38,6 +38,12 @@ async def initialize_app(q: Q):
     q.app.multi_select_index = 5
     q.app.max_path_length = 60
 
+    print([image['path'] for image in example_images][0])
+    print('./sage_identification_pipeline/assets/logo.png')
+
+    logo_path_response = await q.site.upload(['./sage_identification_pipeline/assets/logo.png'])
+    q.app.logo_path = logo_path_response[0]
+
     wave_paths = await q.site.upload([image['path'] for image in example_images])
     for p, example_image in zip(wave_paths, example_images):
         example_image.update({'wave_path': p})

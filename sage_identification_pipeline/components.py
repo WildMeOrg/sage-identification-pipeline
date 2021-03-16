@@ -9,23 +9,20 @@ from .constants import detection_model_tags, classification_model_tags
 def get_meta(side_panel=False):
     return ui.meta_card(
         box='',
-        title='Sage Identification Pipeline',
+        title='WBIA Identification Pipeline',
         layouts=get_layouts(side_panel=side_panel),
     )
 
-def get_header():
-    return ui.header_card(
+def get_logo(q: Q):
+    return ui.footer_card(
         box='header',
-        title='Sage Identification Pipeline',
-        subtitle='Object storage for H2O-AI-Cloud',
-        icon='Lifesaver',
-        icon_color=WaveColors.tangerine,
+        caption=f'![wild me logo]({q.app.logo_path})'
     )
 
 def get_title(q: Q):
     return ui.section_card(
         box='header',
-        title='Sage Identification Pipeline',
+        title='WBIA Identification Pipeline',
         subtitle='Created by Wild Me for the H2O.AI Hybrid Cloud Appstore',
         items=[],
     )
@@ -36,7 +33,7 @@ def get_target_image(q: Q):
         title='Target image',
         items=[
             ui.text(''), # margin top hack
-            ui.text('Sage will process the target image using pre-trained image analysis models. The detection model attempts to draw a box around each individual in the target image. The classification model vets the boxes (annotations) for quality. The identification model compares each annotation to our database of individuals to try to find matches.'),
+            ui.text('WBIA will process the target image using pre-trained image analysis models. The detection model attempts to draw a box around each individual in the target image. The classification model vets the boxes (annotations) for quality. The identification model compares each annotation to our database of individuals to try to find matches.'),
             ui.button(
                 name='open_upload_image_dialog',
                 label='Upload target image',
@@ -61,6 +58,9 @@ def get_target_image_display(q: Q):
     )
 
 def get_action_card(q: Q):
+    sliderNms = q.args.nms if 'nms' in q.args else 0.4
+    sliderSensitivity = q.args.sensitivity if 'sensitivity' in q.args else 0.4
+
     return ui.form_card(
         box='right',
         title='Parameters',
@@ -70,28 +70,32 @@ def get_action_card(q: Q):
                 label='Detection model tag',
                 choices=[ui.choice(name=x, label=x) for x in detection_model_tags],
                 value='ggr2',
+                tooltip='The detection model is used to identify annotations in the target image (draw boxes around animals).',
             ),
             ui.dropdown(
                 name='classification_model_tag',
                 label='Classification model tag',
                 choices=[ui.choice(name=x, label=x) for x in classification_model_tags],
                 value='zebra_v1',
+                tooltip='The classification model is used to label the annotations with species, viewpoint, and confidence score.',
             ),
             ui.slider(
                 name='sensitivity',
                 label='Sensitivity',
-                min=0,
+                min=0.2,
                 max=1,
-                value=0.4,
+                value=sliderSensitivity,
                 step=0.01,
+                tooltip='Lower sensitivity scores result in more annotations.',
             ),
             ui.slider(
                 name='nms',
                 label='Non-maximal suppression (NMS)',
-                min=0,
+                min=0.2,
                 max=1,
-                value=0.4,
+                value=sliderNms,
                 step=0.01,
+                tooltip='Non-maximal suppression attempts to de-duplicate overlapping annotations of the same animal.',
             ),
             ui.button(name='run', label='Run identification pipeline', primary=True, disabled=not q.app.target_image or q.app.running_pipeline),
         ],

@@ -48,7 +48,6 @@ async def fetch_image_size(client, image_int):
 
 @sage_process(verbose = True)
 async def kickoff_detection(client, q, uuid):
-  # data = {'image_uuid_list': [{'__UUID__': uuid}], 'model_tag': q.args.detection_model_tag, 'sensitivity': q.args.sensitivity, 'nms_thresh': q.args.nms }
   data = json_dump_data({'image_uuid_list': [{'__UUID__': uuid}], 'model_tag': q.args.detection_model_tag, 'sensitivity': q.args.sensitivity, 'nms_thresh': q.args.nms })
   result = await client.post('/api/engine/detect/cnn/lightnet/', data = data)
   return result.json()['response']
@@ -139,7 +138,7 @@ async def run_pipeline(q, local_image_path):
     await make_base_ui(q)
 
     identification_results = []
-    for annotation in annotations:
+    for annotation in annotations[:3]:
       identification_job_id = await kickoff_identification(client, q, annotation)
       identification_completed = await poll_status(client, identification_job_id, 120)
       job_results = await get_identification_results(client, q, identification_job_id)
