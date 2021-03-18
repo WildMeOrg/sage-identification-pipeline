@@ -4,7 +4,7 @@ Version = "0.0.1"
 Title = "WBIA Identification Pipeline"
 Description = "Demonstration of Wild Me's WBIA Identification Pipeline, built for the H2O.ai cloud app store."
 LongDescription = "about.md"
-Category = "Other"
+Category = "Data Science"
 Keywords = ["wildme", "wildbook", "sage", "wbia", "marked recapture", "conservation", "wave", "wave-apps", "storage"]
 
 [Runtime]

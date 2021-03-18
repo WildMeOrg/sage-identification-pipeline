@@ -4,8 +4,6 @@ import subprocess
 from datetime import timedelta
 from typing import List, Tuple
 
-import pandas as pd
-
 from h2o_wave import Q, site
 
 from .components import (

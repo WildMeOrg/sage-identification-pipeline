@@ -236,9 +236,10 @@ def get_identification_in_progress(q: Q):
 
 def get_identification_results(q: Q):
     if 'identification_results' in q.app and bool(q.app.identification_results):
+        clean_identification_results = [r for r in q.app.identification_results if r]
         items = [ui.label(label='Identification results')]
         i = 1
-        for result in q.app.identification_results:
+        for result in clean_identification_results:
             cleanUrl = generate_evidence_url(
                 result['reference'], result['qannot_uuid'], result['dannot_uuid'], 'clean'
             )

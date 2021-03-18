@@ -7,7 +7,6 @@ from typing import Any, Callable, Optional
 
 from h2o_wave import Q, ui
 from h2o_wave.core import expando_to_dict
-import jwt
 
 from .utils import get_hostname
 from sage_identification_pipeline import GLOBAL_HANDLERS
@@ -121,18 +120,6 @@ def print_q_args(q_args):
     for k, v in q_args_dict.items():
         print(f'{k}: {v}')
     print('<<<< q.args <<<<')
-
-
-def verify_access(q: Q):
-    if not q.auth or not q.auth.access_token:
-        return False
-    if os.getenv('RESTRICT_ACCESS_TO_H2OAI_ONLY', 'false') == 'false':
-        return True
-    claims = jwt.decode(q.auth.access_token, options={"verify_signature": False})
-    key = os.getenv('USER_ROLE_KEY', 'groups')
-    value = os.getenv('USER_ROLE_VALUE', 'full_access')
-    return q.auth.username.endswith('@h2o.ai') and value in claims.get(key, [])
-
 
 async def make_access_denied_card(q: Q, card_name, box):
     items = [
