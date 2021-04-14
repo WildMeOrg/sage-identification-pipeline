@@ -1,6 +1,6 @@
 [App]
 Name = "wbia_identification_pipeline"
-Version = "0.0.1"
+Version = "0.0.2"
 Title = "WBIA Identification Pipeline"
 Description = "Demonstration of Wild Me's WBIA Identification Pipeline, built for the H2O.ai cloud app store."
 LongDescription = "about.md"
@@ -8,13 +8,4 @@ Category = "Data Science"
 Keywords = ["wildme", "wildbook", "sage", "wbia", "marked recapture", "conservation", "wave", "wave-apps", "storage"]
 
 [Runtime]
-Module = "wbia_identification_pipeline.app"
-EnableOIDC = true
-VolumeSize = "50Gi"
-VolumeMount = "/minio"
-MemoryLimit = "8Gi"
-MemoryReservation = "8Gi"
-
-[[Env]]
-Name = "RESTRICT_ACCESS_TO_H2OAI_ONLY"
-Value = "false"
+Module = "sage_identification_pipeline.app"
