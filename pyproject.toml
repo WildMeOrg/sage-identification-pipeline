@@ -21,7 +21,7 @@ classifiers = [
 python = "~3.7.1"
 h2o-wave = "^0.12.1"
 httpx = "^0.16.1"
-requests = "^2.25.1"
+requests = "^2.31.0"
 
 [tool.poetry.dev-dependencies]
 pytest = { version = "^6.2.2", allow-prereleases = true }
